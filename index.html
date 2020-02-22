@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+        integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <title>GPA Calculator</title>
+</head>
+
+<body>
+    <div class="container">
+        <h1 id="title">GPA Calculator</h1>
+
+        <div id="gpa-mapping" class="align-center">
+            Mapping:
+        </div>
+        <div id="gpa-policy" class="align-center">
+            <div class="custom-control custom-radio custom-control-inline">
+                <input type="radio" id="old-policy" name="policy" class="custom-control-input" value="old"
+                    onchange="handleGpaPolicyChange(value)" checked>
+                <label class="custom-control-label" for="old-policy">Old Policy</label>
+            </div>
+            <div class="custom-control custom-radio custom-control-inline">
+                <input type="radio" id="new-policy" name="policy" class="custom-control-input" value="new"
+                    onchange="handleGpaPolicyChange(value)">
+                <label class="custom-control-label" for="new-policy">New Policy</label>
+            </div>
+            <div class="custom-control custom-radio custom-control-inline">
+                <input type="radio" id="custom-policy" name="policy" class="custom-control-input" value="custom"
+                    onchange="handleGpaPolicyChange(value)">
+                <label class="custom-control-label" for="custom-policy">Custom</label>
+            </div>
+        </div>
+        <table class="table table-bordered" id="course-table">
+            <thead class="thead-light">
+                <tr>
+                    <th scope="col">Course Name</th>
+                    <th scope="col">Credit</th>
+                    <th scope="col">Grade</th>
+                    <th scope="col">Grade Point</th>
+                    <th scope="col">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+        <div class="align-center">
+            <button type="button" class="btn btn-outline-primary" onclick="handleAddCourse()">
+                More Courses
+            </button>
+        </div>
+
+        <div id="gpa-container">
+            <span>Your GPA is: </span>
+            <span id="gpa">0.00</span>
+        </div>
+        <p>
+            Importing: only the undergraduate transcript of Tsinghua University is supported. Please
+            login <a href="https://info.tsinghua.edu.cn" target="_blank">https://info.tsinghua.edu.cn</a> with
+            Chrome, and Ctrl+S to save your transcript as an HTML file. Click the button below to import your
+            transcript. If you have trouble with encoding, switch it and try again.
+        </p>
+        <div class="align-center">
+            <input type="file" id="import" onchange="handleImport()" />
+            <label id="label-import" for="import" class="btn btn-outline-primary">Import</label>
+            <span> as </span>
+            <select id="encoding" onchange="handleEncodingChange()">
+                <option value="UTF-8" selected>UTF-8</option>
+                <option value="GBK">GBK</option>
+            </select>
+        </div>
+
+        <p>Privacy: all computation is performed within your browser. No user data will be collected.</p>
+
+        <!-- dummy data -->
+        <table style="display: none;">
+            <tr id="empty-course">
+                <td>
+                    <input type="text" class="name form-control-sm" />
+                </td>
+                <td>
+                    <input type="text" class="credit form-control-sm" onchange="handleCourseChange(this)" />
+                </td>
+                <td>
+                    <input type="text" class="grade form-control-sm" onchange="handleCourseChange(this)" />
+                </td>
+                <td class="grade-point">N/A</td>
+                <td>
+                    <button type="button" class="btn btn-outline-danger btn-sm"
+                        onclick="handleRemoveCourse(this)">Remove</button>
+                </td>
+            </tr>
+        </table>
+        <span id="empty-gpa-mapping" style="display: none;">
+            <span class="grade badge badge-dark">A</span>
+            <input type="text" class="grade-point input-grade-point" onchange="handleGpaMapChange(this.parentNode)" />
+        </span>
+    </div>
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+        integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+        crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+        integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
+        crossorigin="anonymous"></script>
+
+    <script type="text/javascript">
+        const oldGpaMap = {
+            'A+': 4.0,
+            'A': 4.0,
+            'A-': 3.7,
+            'B+': 3.3,
+            'B': 3.0,
+            'B-': 2.7,
+            'C+': 2.3,
+            'C': 2.0,
+            'C-': 1.7,
+            'D+': 1.3,
+            'D': 1.0,
+            'F': 0.0
+        };
+        const newGpaMap = Object.assign({}, oldGpaMap);
+        for (const grade in newGpaMap) {
+            if (grade !== 'F') {
+                newGpaMap[grade] = Math.min(4.0, newGpaMap[grade] + 0.3);
+            }
+        }
+        let gpaPolicy = 'old';
+        let gpaMap = Object.assign({}, oldGpaMap);
+        let courses = [];
+        let encoding = 'UTF-8';
+
+        function addCourse(index, course) {
+            // data
+            courses.splice(index, 0, course);
+            // DOM
+            var $newCourse = $('#empty-course').clone().removeAttr('id').show();
+            var numRows = $('#course-table > tbody > tr').length;
+            if (numRows === 0 || index >= numRows) {
+                $('#course-table > tbody').append($newCourse);
+            } else {
+                $('#course-table > tbody > tr').eq(index).before($newCourse);
+            }
+            updateCourse(index, course);
+        }
+        function updateCourse(index, course) {
+            // data
+            course.grade = course.grade.toUpperCase();
+            courses[index] = course;
+            // DOM
+            var $row = $('#course-table > tbody > tr').eq(index);
+            var $name = $row.find('.name');
+            var $credit = $row.find('.credit');
+            var $grade = $row.find('.grade');
+            var $gradePoint = $row.find('.grade-point');
+
+            $name.val(course.name);
+            $credit.val(course.credit);
+            $grade.val(course.grade);
+            if (isFinite(gpaMap[course.grade])) {
+                $grade.removeClass('border-danger');
+                $gradePoint.text(Number(gpaMap[course.grade]).toFixed(1));
+            } else {
+                $grade.addClass('border-danger');
+                $gradePoint.text('N/A');
+            }
+
+            if (isNaN(Number(course.credit))) {
+                $credit.addClass('border-danger');
+            } else {
+                $credit.removeClass('border-danger');
+            }
+
+            updateGpa();
+        }
+        function removeCourse(index) {
+            // data
+            courses.splice(index, 1);
+            // DOM
+            $('#course-table > tbody > tr').eq(index).remove();
+            updateGpa();
+        }
+
+        function updateGpa() {
+            let validCredits = [];
+            let validGradePoints = [];
+            for (let course of courses) {
+                if (isFinite(gpaMap[course.grade]) && !isNaN(Number(course.credit))) {
+                    validCredits.push(Number(course.credit));
+                    validGradePoints.push(gpaMap[course.grade]);
+                }
+            }
+            let gpa = validGradePoints.length ? weightedMean(validGradePoints, validCredits) : 0;
+            $('#gpa').text(gpa.toFixed(4));
+        }
+
+        function handleAddCourse() {
+            for (let i = 0; i < 3; i++) {
+                addCourse(courses.length, {
+                    name: '',
+                    credit: '',
+                    grade: '',
+                });
+            }
+        }
+        function handleRemoveCourse(element) {
+            removeCourse($(element).closest('tr').index());
+        }
+        function handleCourseChange(element) {
+            var $row = $(element).closest('tr');
+
+            updateCourse($row.index(), {
+                name: $row.find('.name').val(),
+                credit: $row.find('.credit').val(),
+                grade: $row.find('.grade').val()
+            });
+        }
+
+        function handleEncodingChange() {
+            encoding = $('#encoding').val();
+        }
+        function handleImport() {
+            var file = $('#import').get(0).files[0];
+
+            if (file.type.match(/text.*/)) {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    // clear all records
+                    while (courses.length) {
+                        removeCourse(courses.length - 1);
+                    }
+                    // parse
+                    var elem = $('<div></div>');
+                    elem.html(reader.result);
+                    var $names = $('#table1 > tbody > tr > td:nth-child(2)', elem);
+                    var $credits = $('#table1 > tbody > tr > td:nth-child(3)', elem);
+                    var $grades = $('#table1 > tbody > tr > td:nth-child(4)', elem);
+                    // insert
+                    $credits.each((index, elem) => {
+                        addCourse(courses.length - 1, {
+                            name: $names.eq(index).text().trim(),
+                            credit: $credits.eq(index).text().trim(),
+                            grade: $grades.eq(index).text().trim()
+                        });
+                    });
+                }
+                reader.onerror = function (e) {
+                    alert('Error loading file. Please retry.');
+                }
+                reader.readAsText(file, encoding);
+            } else {
+                alert('Invalid file type. Plain text expected, got ' + file.type + '.');
+            }
+            $('#import').val('');
+        }
+        function handleGpaMapChange(elem) {
+            var $gradePoint = $(elem).find('input.input-grade-point')
+            var newGradePoint = Number($gradePoint.val());
+
+            if (isFinite(newGradePoint)) {
+                gpaMap[$(elem).find('span.grade').text()] = newGradePoint;
+                $gradePoint.removeClass('border-danger');
+            } else {
+                $gradePoint.addClass('border-danger');
+            }
+
+            updateGpaMap(gpaMap);
+        }
+        function handleGpaPolicyChange(policy) {
+            gpaPolicy = policy;
+            if (policy === 'old') {
+                gpaMap = Object.assign({}, oldGpaMap);
+                $('#gpa-mapping input.input-grade-point').attr('disabled', true);
+            } else if (policy === 'new') {
+                gpaMap = Object.assign({}, newGpaMap);
+                $('#gpa-mapping input.input-grade-point').attr('disabled', true);
+            } else {
+                // custom
+                $('#gpa-mapping input.input-grade-point').removeAttr('disabled');
+            }
+            updateGpaMap(gpaMap);
+        }
+        function updateGpaMap(gpaMap) {
+            $('#gpa-mapping').children().remove();
+            for (const [grade, gradePoint] of Object.entries(gpaMap)) {
+                var $newGpaEntry = $('#empty-gpa-mapping').clone().show().appendTo('#gpa-mapping');
+                $newGpaEntry.find('.grade').text(grade);
+                $newGpaEntry.find('.grade-point').val(gradePoint.toFixed(1));
+                if (gpaPolicy !== 'custom') {
+                    $newGpaEntry.find('.grade-point').attr('disabled', true);
+                }
+            }
+            updateGpa();
+        }
+        function weightedMean(values, weights) {
+            let weightSum = weights.reduce((a, b) => a + b, 0);
+            if (weightSum) {
+                let sum = 0;
+                for (var index in values) {
+                    sum += values[index] * weights[index];
+                }
+                return sum / weightSum;
+            } else {
+                return 0;
+            }
+        }
+
+        (function () {
+            handleAddCourse();
+            updateGpaMap(gpaMap);
+        })();
+    </script>
+
+    <style type="text/css">
+        #title {
+            text-align: center;
+            margin: 1rem;
+        }
+
+        .align-center {
+            text-align: center;
+        }
+
+        #gpa-container {
+            text-align: center;
+        }
+
+        #gpa {
+            font-weight: 600;
+            font-size: 25px;
+        }
+
+        #import {
+            display: none;
+        }
+
+        #label-import {
+            margin: 0;
+        }
+
+        .input-grade-point {
+            width: 2rem;
+            height: 1.5rem;
+        }
+        #gpa-mapping, #gpa-policy {
+            margin: 1rem 0;
+        }
+        p {
+            margin: 1rem 0;
+        }
+    </style>
+</body>
+
+</html>
