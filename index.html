@@ -17,26 +17,6 @@
     <div class="container">
         <h1 id="title">GPA Calculator</h1>
 
-        <div id="gpa-mapping" class="align-center">
-            Mapping:
-        </div>
-        <div id="gpa-policy" class="align-center">
-            <div class="custom-control custom-radio custom-control-inline">
-                <input type="radio" id="old-policy" name="policy" class="custom-control-input" value="old"
-                    onchange="handleGpaPolicyChange(value)" checked>
-                <label class="custom-control-label" for="old-policy">Old Policy</label>
-            </div>
-            <div class="custom-control custom-radio custom-control-inline">
-                <input type="radio" id="new-policy" name="policy" class="custom-control-input" value="new"
-                    onchange="handleGpaPolicyChange(value)">
-                <label class="custom-control-label" for="new-policy">New Policy</label>
-            </div>
-            <div class="custom-control custom-radio custom-control-inline">
-                <input type="radio" id="custom-policy" name="policy" class="custom-control-input" value="custom"
-                    onchange="handleGpaPolicyChange(value)">
-                <label class="custom-control-label" for="custom-policy">Custom</label>
-            </div>
-        </div>
         <table class="table table-bordered" id="course-table">
             <thead class="thead-light">
                 <tr>
@@ -60,11 +40,36 @@
             <span>Your GPA is: </span>
             <span id="gpa">0.00</span>
         </div>
+        <hr />
+        <div>
+            <span class="badge badge-info">GPA Mapping</span>
+            The old policy is adopted before the GPA reform, while the new one is established after it.
+        </div>
+        <div id="gpa-policy" class="align-center">
+            <div class="custom-control custom-radio custom-control-inline">
+                <input type="radio" id="old-policy" name="policy" class="custom-control-input" value="old"
+                    onchange="handleGpaPolicyChange(value)" checked>
+                <label class="custom-control-label" for="old-policy">Old Policy</label>
+            </div>
+            <div class="custom-control custom-radio custom-control-inline">
+                <input type="radio" id="new-policy" name="policy" class="custom-control-input" value="new"
+                    onchange="handleGpaPolicyChange(value)">
+                <label class="custom-control-label" for="new-policy">New Policy</label>
+            </div>
+            <div class="custom-control custom-radio custom-control-inline">
+                <input type="radio" id="custom-policy" name="policy" class="custom-control-input" value="custom"
+                    onchange="handleGpaPolicyChange(value)">
+                <label class="custom-control-label" for="custom-policy">Custom</label>
+            </div>
+        </div>
+        <div id="gpa-mapping" class="align-center"></div>
+        <hr />
         <p>
-            Importing: only the undergraduate transcript of Tsinghua University is supported. Please
-            login <a href="https://info.tsinghua.edu.cn" target="_blank">https://info.tsinghua.edu.cn</a> with
-            Chrome, and Ctrl+S to save your transcript as an HTML file. Click the button below to import your
-            transcript. If you have trouble with encoding, switch it and try again.
+            <span class="badge badge-info">Importing</span>
+            Only the undergraduate transcript of Tsinghua University is supported. Please login
+            <a href="https://info.tsinghua.edu.cn" target="_blank">https://info.tsinghua.edu.cn</a>
+            with Chrome, press Ctrl+S to save your transcript as HTML, and then upload it with the button below.
+            If you run into trouble with encoding, switch it and try again.
         </p>
         <div class="align-center">
             <input type="file" id="import" onchange="handleImport()" />
@@ -75,8 +80,11 @@
                 <option value="GBK">GBK</option>
             </select>
         </div>
-
-        <p>Privacy: all computation is performed within your browser. No user data will be collected.</p>
+        <hr />
+        <p>
+            <span class="badge badge-info">Privacy</span>
+            All computation is performed within your browser. No user data will be collected.
+        </p>
 
         <!-- dummy data -->
         <table style="display: none;">
@@ -353,9 +361,9 @@
             height: 1.5rem;
         }
 
-        table > tbody input.grade,
-        table > tbody input.credit,
-        table > tbody input.name {
+        table>tbody input.grade,
+        table>tbody input.credit,
+        table>tbody input.name {
             width: 100%;
         }
 
