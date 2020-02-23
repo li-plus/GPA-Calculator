@@ -42,7 +42,7 @@
         </div>
         <hr />
         <div>
-            <span class="badge badge-info">GPA Mapping</span>
+            <span class="badge badge-info badge-subtitle">GPA Mapping</span>
             The old policy is adopted before the GPA reform, while the new one is established after it.
         </div>
         <div id="gpa-policy" class="align-center">
@@ -65,7 +65,7 @@
         <div id="gpa-mapping" class="align-center"></div>
         <hr />
         <p>
-            <span class="badge badge-info">Importing</span>
+            <span class="badge badge-info badge-subtitle">Importing</span>
             Only the undergraduate transcript of Tsinghua University is supported. Please login
             <a href="https://info.tsinghua.edu.cn" target="_blank">https://info.tsinghua.edu.cn</a>
             with Chrome, press Ctrl+S to save your transcript as HTML, and then upload it with the button below.
@@ -82,7 +82,7 @@
         </div>
         <hr />
         <p>
-            <span class="badge badge-info">Privacy</span>
+            <span class="badge badge-info badge-subtitle">Privacy</span>
             All computation is performed within your browser. No user data will be collected.
         </p>
 
@@ -183,10 +183,10 @@
                 $gradePoint.text('N/A');
             }
 
-            if (isNaN(Number(course.credit))) {
-                $credit.addClass('border-danger');
-            } else {
+            if (isFinite(Number(course.credit))) {
                 $credit.removeClass('border-danger');
+            } else {
+                $credit.addClass('border-danger');
             }
 
             updateGpa();
@@ -203,7 +203,7 @@
             let validCredits = [];
             let validGradePoints = [];
             for (let course of courses) {
-                if (isFinite(gpaMap[course.grade]) && !isNaN(Number(course.credit))) {
+                if (isFinite(gpaMap[course.grade]) && isFinite(Number(course.credit))) {
                     validCredits.push(Number(course.credit));
                     validGradePoints.push(gpaMap[course.grade]);
                 }
@@ -374,6 +374,10 @@
 
         p {
             margin: 1rem 0;
+        }
+
+        .badge-subtitle {
+            font-size: medium;
         }
     </style>
 </body>
