@@ -74,6 +74,11 @@
         <div class="align-center">
             <input type="file" id="import" onchange="handleImport()" />
             <label id="label-import" for="import" class="btn btn-outline-primary">Import</label>
+            <span> from </span>
+            <select id="school" onchange="handleSchoolChange()">
+                <option value="THU" selected>THU</option>
+                <option value="FDU">FDU</option>
+            </select>
             <span> as </span>
             <select id="encoding" onchange="handleEncodingChange()">
                 <option value="UTF-8" selected>UTF-8</option>
@@ -81,10 +86,11 @@
             </select>
         </div>
         <hr />
-        <p>
-            <span class="badge badge-info badge-subtitle">Privacy</span>
-            All computation is performed within your browser. No user data will be collected.
-        </p>
+        <div class="align-center footer">
+            <p>Powered by <a href="https://getbootstrap.com/" target="_blank">Bootstrap</a> |
+                Produced by <a href="https://github.com/li-plus" target="_blank">li-plus</a> |
+                View <a href="https://github.com/li-plus/GPA-Calculator" target="_blank">Project</a></p>
+        </div>
 
         <!-- dummy data -->
         <table style="display: none;">
@@ -147,6 +153,7 @@
         let gpaMap = Object.assign({}, oldGpaMap);
         let courses = [];
         let encoding = 'UTF-8';
+        let school = 'THU';
 
         function addCourse(index, course) {
             // data
@@ -154,7 +161,7 @@
             // DOM
             var $newCourse = $('#empty-course').clone().removeAttr('id').show();
             var numRows = $('#course-table > tbody > tr').length;
-            if (numRows === 0 || index >= numRows) {
+            if (numRows <= 0 || index >= numRows) {
                 $('#course-table > tbody').append($newCourse);
             } else {
                 $('#course-table > tbody > tr').eq(index).before($newCourse);
@@ -237,6 +244,9 @@
         function handleEncodingChange() {
             encoding = $('#encoding').val();
         }
+        function handleSchoolChange() {
+            school = $('#school').val();
+        }
         function handleImport() {
             var file = $('#import').get(0).files[0];
 
@@ -248,14 +258,13 @@
                         removeCourse(courses.length - 1);
                     }
                     // parse
-                    var elem = $('<div></div>');
-                    elem.html(reader.result);
-                    var $names = $('#table1 > tbody > tr > td:nth-child(2)', elem);
-                    var $credits = $('#table1 > tbody > tr > td:nth-child(3)', elem);
-                    var $grades = $('#table1 > tbody > tr > td:nth-child(4)', elem);
+                    const parser = { 'THU': parseTHU, 'FDU': parseFDU }[school];
+                    var $names, $credits, $grades;
+                    [$names, $credits, $grades] = parser(reader.result);
+
                     // insert
                     $credits.each((index, elem) => {
-                        addCourse(courses.length - 1, {
+                        addCourse(courses.length, {
                             name: $names.eq(index).text().trim(),
                             credit: $credits.eq(index).text().trim(),
                             grade: $grades.eq(index).text().trim()
@@ -322,7 +331,25 @@
                 return 0;
             }
         }
+        function parseTHU(htmlSource) {
+            var elem = $('<div></div>');
+            elem.html(htmlSource);
+            var $names = $('#table1 > tbody > tr > td:nth-child(2)', elem);
+            var $credits = $('#table1 > tbody > tr > td:nth-child(3)', elem);
+            var $grades = $('#table1 > tbody > tr > td:nth-child(4)', elem);
 
+            return [$names, $credits, $grades];
+        }
+        function parseFDU(htmlSource) {
+            var elem = $('<div></div>');
+            elem.html(htmlSource);
+
+            var $names = $('div.grid > table.gridtable > tbody > tr > td:nth-child(4)', elem);
+            var $credits = $('div.grid > table.gridtable > tbody > tr > td:nth-child(5)', elem);
+            var $grades = $('div.grid > table.gridtable > tbody > tr > td:nth-child(6)', elem);
+
+            return [$names, $credits, $grades];
+        }
         (function () {
             handleAddCourse();
             updateGpaMap(gpaMap);
@@ -378,6 +405,11 @@
 
         .badge-subtitle {
             font-size: medium;
+        }
+
+        .footer {
+            color: gray;
+            font-size: 0.8rem;
         }
     </style>
 </body>
