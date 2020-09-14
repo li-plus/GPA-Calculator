@@ -1,6 +1,6 @@
 # GPA Calculator 
 
-[![Build Status](https://travis-ci.org/li-plus/GPA-Calculator.svg?branch=master)](https://travis-ci.org/li-plus/GPA-Calculator)
+[![Build and Deploy](https://github.com/li-plus/GPA-Calculator/workflows/Build%20and%20Deploy/badge.svg?branch=master)](https://github.com/li-plus/GPA-Calculator/actions)
 
 ## Using Python
 
